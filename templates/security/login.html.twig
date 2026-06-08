@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign in · Finance Tracker{% endblock %}
+
+{% block body %}
+<div class="auth">
+    <form class="card auth-card" method="post">
+        <h1>💰 Finance Tracker</h1>
+        <p class="muted">Sign in to your dashboard</p>
+
+        {% if error %}
+            <div class="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <label>Email
+            <input type="email" name="email" value="{{ last_username }}" required autofocus>
+        </label>
+        <label>Password
+            <input type="password" name="password" required>
+        </label>
+
+        <input type="hidden" name="_csrf_token" data-controller="csrf-protection"
+               value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit">Sign in</button>
+        <p class="muted small">Demo: <code>demo@example.com</code> / <code>secret123</code></p>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard · Finance Tracker{% endblock %}
+
+{% block body %}
+<header class="topbar">
+    <strong>💰 Finance Tracker</strong>
+    <nav>
+        <span class="muted">{{ app.user.email }}</span>
+        <a href="/api/doc" target="_blank">API docs</a>
+        <a href="{{ path('app_logout') }}">Logout</a>
+    </nav>
+</header>
+
+<main class="wrap">
+    <h1>Overview <span class="muted small">· {{ month }}</span></h1>
+
+    <section class="cards">
+        <div class="card stat">
+            <span class="muted">Net worth</span>
+            <strong class="big">{{ netWorth|number_format(2) }} {{ currency }}</strong>
+        </div>
+        <div class="card stat">
+            <span class="muted">Income this month</span>
+            <strong class="big pos">+{{ income|number_format(2) }}</strong>
+        </div>
+        <div class="card stat">
+            <span class="muted">Expense this month</span>
+            <strong class="big neg">-{{ expense|number_format(2) }}</strong>
+        </div>
+        <div class="card stat">
+            <span class="muted">Net this month</span>
+            <strong class="big">{{ (income - expense)|number_format(2) }}</strong>
+        </div>
+    </section>
+
+    <section class="grid-2">
+        <div class="card">
+            <h2>Income vs Expense (6 months)</h2>
+            <canvas id="monthlyChart" height="220"></canvas>
+        </div>
+        <div class="card">
+            <h2>Spending by category</h2>
+            {% if byCategory is empty %}
+                <p class="muted">No spending recorded this month.</p>
+            {% else %}
+                <canvas id="categoryChart" height="220"></canvas>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="grid-2">
+        <div class="card">
+            <h2>Accounts</h2>
+            <table>
+                <thead><tr><th>Account</th><th>Currency</th><th class="right">Balance</th></tr></thead>
+                <tbody>
+                {% for row in accountRows %}
+                    <tr>
+                        <td>{{ row.account.name }}</td>
+                        <td>{{ row.account.currency }}</td>
+                        <td class="right">{{ row.balance|number_format(2) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="muted">No accounts yet.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <h2>Budgets</h2>
+            {% for b in budgets %}
+                <div class="budget">
+                    <div class="budget-head">
+                        <span>{{ b.name }}</span>
+                        <span class="{{ b.exceeded ? 'neg' : 'muted' }}">
+                            {{ b.spent|number_format(2) }} / {{ b.limit|number_format(2) }}
+                        </span>
+                    </div>
+                    <div class="bar"><div class="bar-fill {{ b.exceeded ? 'over' : '' }}"
+                         style="width: {{ b.progress }}%; background: {{ b.color ?? '#3b82f6' }}"></div></div>
+                </div>
+            {% else %}
+                <p class="muted">No budgets for this month.</p>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+
+<script type="application/json" id="dashboard-data">
+    {{ { monthly: monthly, byCategory: byCategory }|json_encode|raw }}
+</script>
+
+<script type="module">
+    import { Chart, registerables } from 'chart.js';
+    Chart.register(...registerables);
+
+    const data = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: {
+            labels: data.monthly.map(m => m.month),
+            datasets: [
+                { label: 'Income', data: data.monthly.map(m => m.income), backgroundColor: '#22c55e' },
+                { label: 'Expense', data: data.monthly.map(m => m.expense), backgroundColor: '#ef4444' },
+            ],
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+    });
+
+    const cat = document.getElementById('categoryChart');
+    if (cat && data.byCategory.length) {
+        new Chart(cat, {
+            type: 'doughnut',
+            data: {
+                labels: data.byCategory.map(c => c.name),
+                datasets: [{
+                    data: data.byCategory.map(c => c.total),
+                    backgroundColor: data.byCategory.map((c, i) => c.color || ['#3b82f6','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#64748b'][i % 6]),
+                }],
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+        });
+    }
+</script>
+{% endblock %}

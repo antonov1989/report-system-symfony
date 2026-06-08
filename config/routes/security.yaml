@@ -1,0 +1,8 @@
+_security_logout:
+    resource: security.route_loader.logout
+    type: service
+
+# Declared so the json_login authenticator on the `login` firewall can intercept it.
+api_login:
+    path: /api/login
+    methods: POST

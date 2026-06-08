@@ -142,8 +142,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->accounts;
     }
 
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here.
+        // No transient sensitive data is stored on the user.
     }
 }

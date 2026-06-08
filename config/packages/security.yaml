@@ -45,6 +45,8 @@ security:
                 login_path: app_login
                 check_path: app_login
                 default_target_path: app_dashboard
+                username_parameter: email
+                password_parameter: password
                 enable_csrf: true
             logout:
                 path: app_logout

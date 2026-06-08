@@ -1,0 +1,5 @@
+framework:
+    messenger:
+        transports:
+            # Collect dispatched messages in memory so tests can assert on them.
+            async: 'in-memory://'

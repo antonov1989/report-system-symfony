@@ -1,0 +1,4 @@
+doctrine:
+    dbal:
+        # Run tests against a dedicated database (e.g. app_test) so the dev data is untouched.
+        dbname_suffix: '_test'
